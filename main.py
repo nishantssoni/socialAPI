@@ -1,7 +1,8 @@
-from fastapi import FastAPI, Response, status
+from fastapi import FastAPI, Response, status, HTTPException
 from fastapi.params import Body
 from pydantic import BaseModel
 from typing import Optional
+import random
 
 
 app = FastAPI()
@@ -27,16 +28,36 @@ async def posts():
     return {"message": my_posts}
 
 @app.get("/posts/{id}")
-async def getpost(id: int, response: Response):
+async def getpost(id: int):
     for post in my_posts:
         if post["id"] == id:
             return post
-    response.status_code = status.HTTP_404_NOT_FOUND
-    return {"message": "post not found"}
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                        detail=f"post with id: {id} was not found")
 
-@app.post("/posts/")
+
+@app.post("/posts/", status_code=status.HTTP_201_CREATED)
 async def createpost(post: Post):
     post_dict = post.dict()
-    post_dict["id"] = len(my_posts) + 1
+    post_dict["id"] = random.randint(0, 100000000)
     my_posts.append(post_dict)
     return {"message": post_dict}
+
+@app.delete("/posts/{id}")
+async def deletepost(id: int):
+    for index, post in enumerate(my_posts):
+        if post["id"] == id:
+            my_posts.pop(index)
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                        detail=f"post with id: {id} was not found")
+
+@app.put("/posts/{id}")
+async def updatepost(id: int, post: Post):
+    for index, p in enumerate(my_posts):
+        if p["id"] == id:
+            my_posts[index] = post.dict()
+            my_posts[index]["id"] = id
+            return {"message": f"post with id: {id} was updated"}
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                        detail=f"post with id: {id} was not found")
