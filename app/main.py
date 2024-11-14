@@ -58,6 +58,6 @@ async def updatepost(id: int, post: Post):
         if p["id"] == id:
             my_posts[index] = post.dict()
             my_posts[index]["id"] = id
-            return {"message": f"post with id: {id} was updated"}
+            return {"data": my_posts[index]}
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                         detail=f"post with id: {id} was not found")
