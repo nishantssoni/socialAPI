@@ -1,40 +1,15 @@
-from fastapi import FastAPI, Response, status, HTTPException
-from fastapi.params import Body
+from fastapi import FastAPI, status, HTTPException
 from pydantic import BaseModel
-from typing import Optional
-import psycopg2
-from psycopg2.extras import RealDictCursor
-import time
-from dotenv import load_dotenv
-import os
 from . import models
 from .database import engine, get_db
+from sqlalchemy.orm import Session
+from fastapi import Depends
 
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-
-load_dotenv()  # Load the .env file
-
-# Database connection
-while True:
-    try:
-        conn = psycopg2.connect(
-            host = os.getenv("HOST"),
-            database = os.getenv("DATABASE"),
-            user = os.getenv("USER"),
-            password = os.getenv("PASSWORD"),
-            cursor_factory=RealDictCursor
-        )
-        cursor = conn.cursor()
-        print("Database connection was successful")
-        break
-    except Exception as error:
-        print("Connection to database failed")
-        print("Error: ", error)
-        time.sleep(2)
 
 
 # model definitions
@@ -49,17 +24,21 @@ async def root():
     return {"message": "Hello World...nishant"}
 
 
+@app.get("/sqlalchemy")
+async def sqla(db: Session = Depends(get_db)):
+    posts = db.query(models.Post).all()
+    return {"data": posts}
+
+
 @app.get("/posts/")
-async def posts():
-    cursor.execute("""select * from posts""")
-    posts = cursor.fetchall()
+async def posts(db: Session = Depends(get_db)):
+    posts = db.query(models.Post).all()
     return {"message": posts}
 
 
 @app.get("/posts/{id}")
-async def getpost(id: int):
-    cursor.execute("""select * from posts where id = %s""", (str(id),))
-    post = cursor.fetchone()
+async def getpost(id: int, db: Session = Depends(get_db)):
+    post = db.query(models.Post).filter(models.Post.id == id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail=f"post with id: {id} was not found")
@@ -67,32 +46,35 @@ async def getpost(id: int):
 
 
 @app.post("/posts/", status_code=status.HTTP_201_CREATED)
-async def createpost(post: Post):
-    cursor.execute("""insert into posts (title, content, published) values (%s, %s, %s) returning *""", 
-                                            (post.title, post.content, post.published))
-    my_post = cursor.fetchone()
-    conn.commit()
-    return {"message": my_post}
+async def createpost(post: Post, db: Session = Depends(get_db)):
+    db_post = models.Post(title=post.title, content=post.content, published=post.published)
+    db.add(db_post)
+    db.commit()
+    db.refresh(db_post)
+    return {"data": db_post}
 
 
 @app.delete("/posts/{id}")
-async def deletepost(id: int):
-    cursor.execute("""delete from posts where id = %s returning *""", (str(id),))
-    deleted_post = cursor.fetchone()
-    conn.commit()
-    if deleted_post == None:
+async def deletepost(id: int, db: Session = Depends(get_db)):
+    db_post = db.query(models.Post).filter(models.Post.id == id).first()
+    if not db_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail=f"post with id: {id} was not found")
-    return {"message": deleted_post}
+    db.delete(db_post)
+    db.commit()
+    return {"message": db_post}
 
 
 @app.put("/posts/{id}")
-async def updatepost(id: int, post: Post):
-    cursor.execute("""update posts set title = %s, content = %s, published = %s where id = %s returning *""",
-                    (post.title, post.content, post.published, str(id),))
-    updated_post = cursor.fetchone()
-    conn.commit()
-    if updated_post == None:
+async def updatepost(id: int, post: Post, db: Session = Depends(get_db)):
+    db_post = db.query(models.Post).filter(models.Post.id == id).first()
+    if not db_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-                            detail=f"post with id: {id} was not found")
-    return {"message": updated_post}
+                            detail=f"post with id: {id} was not found")    
+    db_post.title = post.title
+    db_post.content = post.content
+    db_post.published = post.published
+    db.commit()
+    db.refresh(db_post)
+    return {"message": db_post}
+
