@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 import os
 
 app = FastAPI()
+# Load the .env file
+load_dotenv()
 
 while True:
 
@@ -29,9 +31,6 @@ while True:
         print("Error: ", error)
         time.sleep(2)
 
-cursor.execute("""select * from posts""")
-posts = cursor.fetchall()
-print("Posts: ", posts)
 
 
 my_posts = [
@@ -51,15 +50,18 @@ async def root():
 
 @app.get("/posts/")
 async def posts():
-    return {"message": my_posts}
+    cursor.execute("""select * from posts""")
+    posts = cursor.fetchall()
+    return {"message": posts}
 
 @app.get("/posts/{id}")
 async def getpost(id: int):
-    for post in my_posts:
-        if post["id"] == id:
-            return post
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-                        detail=f"post with id: {id} was not found")
+    cursor.execute("""select * from posts where id = %s""", (str(id),))
+    post = cursor.fetchone()
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                            detail=f"post with id: {id} was not found")
+    return {"message": post}
 
 
 @app.post("/posts/", status_code=status.HTTP_201_CREATED)
