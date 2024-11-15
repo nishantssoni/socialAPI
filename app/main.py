@@ -66,19 +66,21 @@ async def getpost(id: int):
 
 @app.post("/posts/", status_code=status.HTTP_201_CREATED)
 async def createpost(post: Post):
-    post_dict = post.dict()
-    post_dict["id"] = random.randint(0, 100000000)
-    my_posts.append(post_dict)
-    return {"message": post_dict}
+    cursor.execute("""insert into posts (title, content, published) values (%s, %s, %s) returning *""", 
+                                            (post.title, post.content, post.published))
+    my_post = cursor.fetchone()
+    conn.commit()
+    return {"message": my_post}
 
 @app.delete("/posts/{id}")
 async def deletepost(id: int):
-    for index, post in enumerate(my_posts):
-        if post["id"] == id:
-            my_posts.pop(index)
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-                        detail=f"post with id: {id} was not found")
+    cursor.execute("""delete from posts where id = %s returning *""", (str(id),))
+    deleted_post = cursor.fetchone()
+    conn.commit()
+    if deleted_post == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                            detail=f"post with id: {id} was not found")
+    return {"message": deleted_post}
 
 @app.put("/posts/{id}")
 async def updatepost(id: int, post: Post):
