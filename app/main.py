@@ -1,5 +1,5 @@
 from fastapi import FastAPI, status, HTTPException
-from pydantic import BaseModel
+from .schemas import Post
 from . import models
 from .database import engine, get_db
 from sqlalchemy.orm import Session
@@ -12,11 +12,6 @@ app = FastAPI()
 
 
 
-# model definitions
-class Post(BaseModel):
-    title: str
-    content: str
-    published: bool = False
 
 # database operations
 @app.get("/")
@@ -47,7 +42,7 @@ async def getpost(id: int, db: Session = Depends(get_db)):
 
 @app.post("/posts/", status_code=status.HTTP_201_CREATED)
 async def createpost(post: Post, db: Session = Depends(get_db)):
-    db_post = models.Post(title=post.title, content=post.content, published=post.published)
+    db_post = models.Post(**post.dict())
     db.add(db_post)
     db.commit()
     db.refresh(db_post)
@@ -65,8 +60,8 @@ async def deletepost(id: int, db: Session = Depends(get_db)):
     return {"message": db_post}
 
 
-@app.put("/posts/{id}")
-async def updatepost(id: int, post: Post, db: Session = Depends(get_db)):
+@app.put("/posts/{id}") 
+async def updatepost(id: int, post: Post, db: Session = Depends(get_db)):  
     db_post = db.query(models.Post).filter(models.Post.id == id).first()
     if not db_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
