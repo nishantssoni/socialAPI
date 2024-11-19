@@ -1,15 +1,16 @@
 from fastapi import FastAPI, status, HTTPException
 from . import schemas
 from . import models
+from . import utils
 from .database import engine, get_db
 from sqlalchemy.orm import Session
 from fastapi import Depends
 from typing import List
-from passlib.context import CryptContext
+
 
 
 # initializing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
@@ -74,7 +75,7 @@ async def updatepost(id: int, post: schemas.Post, db: Session = Depends(get_db))
 @app.post("/users/", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
 async def createuser(user: schemas.UserCreate, db: Session = Depends(get_db)):
     # hashing the password
-    hashed_password = pwd_context.hash(user.password)
+    hashed_password = utils.hash(user.password)
     user.password = hashed_password
     db_user = models.User(**user.dict())
     db.add(db_user)
