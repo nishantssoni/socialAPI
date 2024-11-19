@@ -18,7 +18,7 @@ app = FastAPI()
 # routes
 @app.get("/")
 async def root():
-    return {"message": "Hello World...nishant"}
+    return {"message": "Hello World...nishant soni"}
 
 
 # posts routes
