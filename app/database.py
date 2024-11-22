@@ -9,10 +9,9 @@ import os
 load_dotenv()
 DB_HOST = os.getenv("HOST")
 DB_NAME = os.getenv("DATABASE")
-DB_USER = os.getenv("USER")
+DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("PASSWORD")
 
-# SQLALCHEMY_DATABASE_URL = f"postgresql://{user}:{password}@{host}/{database}"
 
 # Construct database URL
 SQLALCHEMY_DATABASE_URL = os.getenv(
