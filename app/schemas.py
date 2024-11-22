@@ -12,6 +12,7 @@ class Post(PostBase):
 
 class PostResponse(PostBase):
     created_at: datetime
+    id: int
 
     class Config:
         orm_mode = True
@@ -25,6 +26,7 @@ class UserCreate(BaseModel):
 class UserResponse(BaseModel):
     email: EmailStr
     created_at: datetime
+    id: int
 
     class Config:
         orm_mode = True
