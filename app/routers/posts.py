@@ -12,6 +12,7 @@ sys.path.insert(0, str(ROOT_DIR))
 import schemas
 import models
 from database import engine, get_db
+import oauth2
 
 
 
@@ -21,13 +22,15 @@ router = APIRouter(
 )
 # posts routes
 @router.get("/", response_model=List[schemas.PostResponse])
-async def posts(db: Session = Depends(get_db)):
+async def posts(db: Session = Depends(get_db),
+                      user_id: int = Depends(oauth2.get_current_user)):
     posts = db.query(models.Post).all()
     return posts
 
 
 @router.get("/{id}", response_model=schemas.PostResponse)
-async def getpost(id: int, db: Session = Depends(get_db)):
+async def getpost(id: int, db: Session = Depends(get_db),
+                      user_id: int = Depends(oauth2.get_current_user)):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
@@ -36,7 +39,9 @@ async def getpost(id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.PostResponse)
-async def createpost(post: schemas.Post, db: Session = Depends(get_db)):
+async def createpost(post: schemas.Post, db: Session = Depends(get_db),
+                      user_id: int = Depends(oauth2.get_current_user)):
+    print(user_id)
     db_post = models.Post(**post.dict())
     db.add(db_post)
     db.commit()
@@ -45,7 +50,8 @@ async def createpost(post: schemas.Post, db: Session = Depends(get_db)):
 
 
 @router.delete("/{id}", response_model=schemas.PostResponse)
-async def deletepost(id: int, db: Session = Depends(get_db)):
+async def deletepost(id: int, db: Session = Depends(get_db),
+                      user_id: int = Depends(oauth2.get_current_user)):
     db_post = db.query(models.Post).filter(models.Post.id == id).first()
     if not db_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
@@ -56,7 +62,8 @@ async def deletepost(id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{id}", response_model=schemas.PostResponse) 
-async def updatepost(id: int, post: schemas.Post, db: Session = Depends(get_db)):  
+async def updatepost(id: int, post: schemas.Post, db: Session = Depends(get_db),
+                      user_id: int = Depends(oauth2.get_current_user)): 
     db_post = db.query(models.Post).filter(models.Post.id == id).first()
     if not db_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
