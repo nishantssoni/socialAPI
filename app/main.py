@@ -6,7 +6,7 @@ from database import engine, get_db
 from sqlalchemy.orm import Session
 from fastapi import Depends
 from typing import List
-from routers import users, posts
+from routers import users, posts, auth
 
 
 # initializing
@@ -16,6 +16,7 @@ app = FastAPI()
 
 app.include_router(users.router)
 app.include_router(posts.router)
+app.include_router(auth.router)
 
 # routes
 @app.get("/")
