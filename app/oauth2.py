@@ -5,6 +5,9 @@ from fastapi import HTTPException, status, Depends
 import schemas
 from jwt import PyJWTError 
 from fastapi.security import OAuth2PasswordBearer
+import database
+import models
+from sqlalchemy.orm import Session
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -42,5 +45,8 @@ def verify_token(token: str):
     return token_data
 
 # get current user
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    return verify_token(token)
+async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
+    token = verify_token(token)
+    user = db.query(models.User).filter(models.User.id == token.id).first()
+
+    return user
