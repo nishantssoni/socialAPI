@@ -24,7 +24,8 @@ router = APIRouter(
 @router.get("/", response_model=List[schemas.PostResponse])
 async def posts(db: Session = Depends(get_db),
                       current_user: int = Depends(oauth2.get_current_user)):
-    posts = db.query(models.Post).all()
+    # posts = db.query(models.Post).all()
+    posts   = db.query(models.Post).filter(models.Post.user_id == current_user.id).all()
     return posts
 
 
@@ -43,6 +44,7 @@ async def createpost(post: schemas.Post, db: Session = Depends(get_db),
                       current_user: int = Depends(oauth2.get_current_user)):
 
     db_post = models.Post(**post.dict())
+    db_post.user_id = current_user.id
     db.add(db_post)
     db.commit()
     db.refresh(db_post)
