@@ -20,12 +20,17 @@ router = APIRouter(
     prefix="/posts",
     tags=["posts"],
 )
+
+
 # posts routes
 @router.get("/", response_model=List[schemas.PostResponse])
 async def posts(db: Session = Depends(get_db),
                       current_user: int = Depends(oauth2.get_current_user)):
-    # posts = db.query(models.Post).all()
-    posts   = db.query(models.Post).filter(models.Post.user_id == current_user.id).all()
+    # get all the posts
+    posts = db.query(models.Post).all()
+
+    # get only the posts of the current user
+    # posts   = db.query(models.Post).filter(models.Post.user_id == current_user.id).all()
     return posts
 
 
@@ -37,9 +42,9 @@ async def getpost(id: int, db: Session = Depends(get_db),
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail=f"post with id: {id} was not found")
     # check if the user is the owner of the post
-    if post.user_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
-                            detail=f"the required action is not allowed")
+    # if post.user_id != current_user.id:
+    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
+    #                         detail=f"the required action is not allowed")
     return post
 
 
