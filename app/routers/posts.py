@@ -1,7 +1,7 @@
 from fastapi import FastAPI, status, HTTPException, APIRouter
 from sqlalchemy.orm import Session
 from fastapi import Depends
-from typing import List
+from typing import List, Optional
 # At the top of your routers/user.py:
 import sys
 from pathlib import Path
@@ -25,9 +25,12 @@ router = APIRouter(
 # posts routes
 @router.get("/", response_model=List[schemas.PostResponse])
 async def posts(db: Session = Depends(get_db),
-                      current_user: int = Depends(oauth2.get_current_user)):
+                      current_user: int = Depends(oauth2.get_current_user),
+                      limit: int = 10,
+                      skip: int = 0,
+                      search: Optional[str] = ""):
     # get all the posts
-    posts = db.query(models.Post).all()
+    posts = db.query(models.Post).filter(models.Post.title.contains(search)).offset(skip).limit(limit).all()
 
     # get only the posts of the current user
     # posts   = db.query(models.Post).filter(models.Post.user_id == current_user.id).all()
