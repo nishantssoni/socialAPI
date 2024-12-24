@@ -1,11 +1,6 @@
-from fastapi import FastAPI, status, HTTPException
-import schemas
+from fastapi import FastAPI
 import models
-import utils
-from database import engine, get_db
-from sqlalchemy.orm import Session
-from fastapi import Depends
-from typing import List
+from database import engine
 from routers import users, posts, auth
 
 

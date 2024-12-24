@@ -9,10 +9,19 @@ import database
 import models
 from sqlalchemy.orm import Session
 
+from dotenv import load_dotenv
+import os
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
+# Load .env only in development
+if os.getenv("ENV") == "dev":
+    print("Loading .env file")
+    load_dotenv()
+
+SECRET_KEY = str(os.getenv("SECRET_KEY"))
+
 # secret key
-SECRET_KEY = "4cce9f493ea02288538acd87b3a1f3522137c1a1db868955849df9070b6b26e4"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 

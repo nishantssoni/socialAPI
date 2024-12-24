@@ -5,8 +5,11 @@ from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 import os
 
-# loading the .env file
-load_dotenv()
+# Load .env only in development
+if os.getenv("ENV") == "dev":
+    print("Loading .env file")
+    load_dotenv()
+
 DB_HOST = os.getenv("HOST")
 DB_NAME = os.getenv("DATABASE")
 DB_USER = os.getenv("DB_USER")
