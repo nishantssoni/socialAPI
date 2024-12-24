@@ -36,6 +36,10 @@ async def getpost(id: int, db: Session = Depends(get_db),
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail=f"post with id: {id} was not found")
+    # check if the user is the owner of the post
+    if post.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
+                            detail=f"the required action is not allowed")
     return post
 
 
@@ -58,6 +62,11 @@ async def deletepost(id: int, db: Session = Depends(get_db),
     if not db_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail=f"post with id: {id} was not found")
+    
+    # check if the user is the owner of the post
+    if db_post.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
+                            detail=f"the required action is not allowed")
     db.delete(db_post)
     db.commit()
     return db_post
@@ -69,7 +78,12 @@ async def updatepost(id: int, post: schemas.Post, db: Session = Depends(get_db),
     db_post = db.query(models.Post).filter(models.Post.id == id).first()
     if not db_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-                            detail=f"post with id: {id} was not found")    
+                            detail=f"post with id: {id} was not found")
+    
+    # check if the user is the owner of the post
+    if db_post.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
+                            detail=f"the required action is not allowed")    
     db_post.title = post.title
     db_post.content = post.content
     db_post.published = post.published
