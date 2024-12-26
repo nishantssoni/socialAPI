@@ -1,26 +1,16 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-
-from dotenv import load_dotenv
-import os
-
-# Load .env only in development
-if os.getenv("ENV") == "dev":
-    print("Loading .env file")
-    load_dotenv()
-
-DB_HOST = os.getenv("HOST")
-DB_NAME = os.getenv("DATABASE")
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("PASSWORD")
+from config import settings
 
 
-# Construct database URL
-SQLALCHEMY_DATABASE_URL = os.getenv(
-    "DB_URL",
-    f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
-)
+
+
+# Construct database URL using settings
+SQLALCHEMY_DATABASE_URL = f"postgresql://{settings.DATABASE_USERNAME}:{settings.DATABASE_PASSWORD}@{settings.DATABASE_HOSTNAME}:{settings.DATABASE_PORT}/{settings.DATABASE_NAME}"
+print(f"Attempting to connect to: {SQLALCHEMY_DATABASE_URL}") 
+
+# SQLALCHEMY_DATABASE_URL = "postgresql://postgres:lalu@postgres:5432/fastapi"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

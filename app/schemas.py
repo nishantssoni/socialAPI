@@ -15,13 +15,13 @@ class UserResponse(BaseModel):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserPostResponse(BaseModel):
     email: EmailStr
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # posts
 class PostBase(BaseModel):
@@ -39,7 +39,7 @@ class PostResponse(PostBase):
     owner: UserPostResponse
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # auth

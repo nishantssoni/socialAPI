@@ -2,6 +2,7 @@ from fastapi import FastAPI
 import models
 from database import engine
 from routers import users, posts, auth
+import config
 
 
 # initializing

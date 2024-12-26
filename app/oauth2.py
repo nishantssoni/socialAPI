@@ -8,22 +8,17 @@ from fastapi.security import OAuth2PasswordBearer
 import database
 import models
 from sqlalchemy.orm import Session
-
-from dotenv import load_dotenv
-import os
+from config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-# Load .env only in development
-if os.getenv("ENV") == "dev":
-    print("Loading .env file")
-    load_dotenv()
 
-SECRET_KEY = str(os.getenv("SECRET_KEY"))
+
+SECRET_KEY = settings.SECRET_KEY
 
 # secret key
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ALGORITHM = settings.ALGORITHM
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
 # create access token
 def create_access_token(data: dict):
