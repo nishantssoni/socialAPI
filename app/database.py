@@ -4,13 +4,9 @@ from sqlalchemy.orm import sessionmaker
 from config import settings
 
 
-
-
 # Construct database URL using settings
 SQLALCHEMY_DATABASE_URL = f"postgresql://{settings.DATABASE_USERNAME}:{settings.DATABASE_PASSWORD}@{settings.DATABASE_HOSTNAME}:{settings.DATABASE_PORT}/{settings.DATABASE_NAME}"
 print(f"Attempting to connect to: {SQLALCHEMY_DATABASE_URL}") 
-
-# SQLALCHEMY_DATABASE_URL = "postgresql://postgres:lalu@postgres:5432/fastapi"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

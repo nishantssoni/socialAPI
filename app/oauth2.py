@@ -10,9 +10,8 @@ import models
 from sqlalchemy.orm import Session
 from config import settings
 
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-
-
 
 SECRET_KEY = settings.SECRET_KEY
 
@@ -52,5 +51,4 @@ def verify_token(token: str):
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
     token = verify_token(token)
     user = db.query(models.User).filter(models.User.id == token.id).first()
-
     return user
