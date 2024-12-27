@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from fastapi import Depends
 from typing import List
 from passlib.context import CryptContext
+from pydantic import BaseModel
 
 
 # initializing
