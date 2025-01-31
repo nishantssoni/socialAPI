@@ -1,20 +1,8 @@
 
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
-
-class PostBase(BaseModel):
-    title: str
-    content: str
-    published: bool = False
-
-class Post(PostBase):
-    pass
-
-class PostResponse(PostBase):
-    created_at: datetime
-
-    class Config:
-        orm_mode = True
+from typing import Optional, Annotated
+from pydantic.types import conint
 
 # users
 
@@ -25,6 +13,52 @@ class UserCreate(BaseModel):
 class UserResponse(BaseModel):
     email: EmailStr
     created_at: datetime
+    id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+class UserPostResponse(BaseModel):
+    email: EmailStr
+    id: int
+    class Config:
+        from_attributes = True
+
+# posts
+class PostBase(BaseModel):
+    title: str
+    content: str
+    published: bool = False
+
+class Post(PostBase):
+    pass
+
+class PostResponse(PostBase):
+    created_at: datetime
+    id: int
+    # user_id: int
+    owner: UserPostResponse
+
+    class Config:
+        from_attributes = True
+
+
+# auth
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+# token
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    id: Optional[str] = None
+
+
+# vote
+class Vote(BaseModel):
+    post_id: int
+    dir: Annotated[int, conint(le=1)]
